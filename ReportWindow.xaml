@@ -1,0 +1,43 @@
+﻿<Window x:Class="PROG7312.ReportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PROG7312"
+        mc:Ignorable="d"
+        Title="Window1" Height="450" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Location input -->
+        <TextBox HorizontalAlignment="Center" Margin="0,50,0,0" 
+                 TextWrapping="Wrap" Text="Enter Location" VerticalAlignment="Top" 
+                 Width="164" Height="30" Grid.Column="1" Name="txtLocation"/>
+
+        <!-- Category ListBox -->
+        <ListBox Grid.ColumnSpan="2" Margin="318,85,318,235" Name="lstCategory"
+                 DisplayMemberPath="Category"/>
+
+        <!-- Description -->
+        <RichTextBox Grid.ColumnSpan="2" Margin="318,204,318,76" Name="rchDesc">
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="Enter description here"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+
+        <!-- Image selector -->
+        <Image HorizontalAlignment="Left" Height="50" Margin="268,252,0,0" 
+               VerticalAlignment="Top" Width="50" Grid.Column="1" x:Name="imgFile"
+               MouseDown="imgFile_MouseDown" Cursor="Hand"/>
+
+        <!-- Submit image -->
+        <Image HorizontalAlignment="Left" Height="51" Margin="298,375,0,0" 
+               VerticalAlignment="Top" Width="217" Grid.Column="1" Name="imgSubmit"
+               MouseDown="imgSubmit_MouseDown" Cursor="Hand"/>
+    </Grid>
+</Window>

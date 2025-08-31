@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Diagnostics;
 
 namespace PROG7312.Services
 {
@@ -20,16 +22,39 @@ namespace PROG7312.Services
 
         public GPTServices()
         {
-            _client = new HttpClient();
-            _client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
+            _client = new HttpClient
+            {
+                BaseAddress = new Uri("https://openrouter.ai/api/v1/")
+            };
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", Environment.GetEnvironmentVariable("OPENROUTER_API_KEY"));
         }
 
         /// <summary>
-        /// High-level convenience: given a clicked FrameworkElement it will gather event info,
-        /// assemble the prompt, call the model and return the assistant text.
-        /// Call this from MainWindow instead of doing reflection there.
+        /// Convenience: accept OriginalSource, resolve to a control, then explain it.
+        /// </summary>
+        public async Task<string> ExplainClickedAsync(object originalSource)
+        {
+            var element = ResolveControl(originalSource);
+            if (element == null)
+                return "(No valid element found)";
+
+            return await ExplainClickedElementAsync(element);
+        }
+
+        /// <summary>
+        /// Public: resolve the visual-tree object to a FrameworkElement (Control) so callers don't need to duplicate logic.
+        /// </summary>
+        public FrameworkElement ResolveControl(object source)
+        {
+            var current = source as DependencyObject;
+            while (current != null && !(current is Control))
+                current = VisualTreeHelper.GetParent(current);
+            return current as FrameworkElement;
+        }
+
+        /// <summary>
+        /// Public: analyze the provided FrameworkElement (type/name/events), build prompt and call LLM.
         /// </summary>
         public async Task<string> ExplainClickedElementAsync(FrameworkElement element)
         {
@@ -39,40 +64,62 @@ namespace PROG7312.Services
             string elementType = element.GetType().Name;
             string xamlSnippet = $"<{elementType} Name=\"{element.Name}\" />";
 
+            // collect visual hints (Content/ToolTip/Tag) so assistant has UI context
+            var visualParts = new List<string>();
+            if (element is Button btn)
+            {
+                if (btn.Content != null) visualParts.Add($"Content: '{btn.Content}'");
+                if (btn.ToolTip != null) visualParts.Add($"ToolTip: '{btn.ToolTip}'");
+                if (!string.IsNullOrEmpty(btn.Tag?.ToString())) visualParts.Add($"Tag: '{btn.Tag}'");
+            }
+            else
+            {
+                var tt = element.GetValue(Control.ToolTipProperty);
+                if (tt != null) visualParts.Add($"ToolTip: '{tt}'");
+                var tag = element.GetValue(FrameworkElement.TagProperty);
+                if (tag != null) visualParts.Add($"Tag: '{tag}'");
+            }
+            string visualDetails = visualParts.Count > 0 ? string.Join("; ", visualParts) : "(no visual hints)";
+
             var eventsInfo = GatherEventInfo(element);
 
-            return await ExplainComponentAsync(elementType, elementName, xamlSnippet, eventsInfo);
+            return await ExplainComponentAsync(elementType, elementName, xamlSnippet, eventsInfo, visualDetails);
         }
 
-        /// <summary>
-        /// Existing prompt builder: keep this if you want to call with pre-collected info.
-        /// </summary>
-        public async Task<string> ExplainComponentAsync(string elementType, string elementName, string xamlSnippet, List<string> eventsInfo)
+        private async Task<string> ExplainComponentAsync(
+            string elementType,
+            string elementName,
+            string xamlSnippet,
+            List<string> eventsInfo,
+            string visualDetails = null)
         {
             string eventsDetails = eventsInfo != null && eventsInfo.Count > 0
                 ? string.Join("\n\n", eventsInfo)
                 : "(No event handlers detected; this component does not perform any actions)";
 
+            visualDetails ??= "(no visual hints)";
+
             string prompt = $"The user clicked on a {elementType} named '{elementName}'.\n\n" +
+                            $"Visual: {visualDetails}\n\n" +
                             $"XAML:\n{xamlSnippet}\n\n" +
                             $"Event Handlers with code:\n{eventsDetails}\n\n" +
                             "Explain in simple terms what this component does and how it behaves.";
 
+            // DEBUG: print the full prompt so you can inspect it in Output / terminal
+            Debug.WriteLine("----- GPT PROMPT BEGIN -----");
+            Debug.WriteLine(prompt);
+            Debug.WriteLine("----- GPT PROMPT END -----");
+
             return await GetResponseAsync(prompt);
         }
 
-        #region Reflection + source scanning (moved here from MainWindow)
+        #region reflection + code scanning
 
-        /// <summary>
-        /// Gather events + code for a FrameworkElement. Returns a list of readable strings.
-        /// This tries CLR reflection first, then falls back to common XAML pattern handler names.
-        /// </summary>
         private List<string> GatherEventInfo(FrameworkElement element)
         {
             var list = new List<string>();
             if (element == null) return list;
 
-            // 1) Try CLR events via reflection
             try
             {
                 var events = element.GetType().GetEvents(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -80,7 +127,6 @@ namespace PROG7312.Services
                 {
                     try
                     {
-                        // Attempt to find backing field (works for many patterns; not guaranteed for routed events)
                         var field = element.GetType().GetField(ev.Name,
                             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
 
@@ -98,18 +144,12 @@ namespace PROG7312.Services
                             }
                         }
                     }
-                    catch
-                    {
-                        // ignore per-event failures
-                    }
+                    catch { /* ignore single-event failures */ }
                 }
             }
-            catch
-            {
-                // ignore reflection failures
-            }
+            catch { /* ignore reflection failures */ }
 
-            // 2) XAML naming convention fallback
+            // fallback XAML-style handler names (but only add informative message if the method isn't found)
             if (element is Button btn && !string.IsNullOrEmpty(btn.Name))
                 AddHandlerFromXamlStyle(list, btn.Name, "Click");
             else if (element is ComboBox cb && !string.IsNullOrEmpty(cb.Name))
@@ -123,20 +163,21 @@ namespace PROG7312.Services
         private void AddHandlerFromXamlStyle(List<string> list, string elementName, string eventName)
         {
             string handlerName = $"{elementName}_{eventName}";
-            string body = GetMethodBodyFromFile(handlerName) ??
-                          $"(Method {handlerName} exists but no code found; default action could be showing a message or updating a control)";
-            list.Add($"{eventName} → {handlerName}\n{body}");
+            string body = GetMethodBodyFromFile(handlerName);
+            if (body != null)
+                list.Add($"{eventName} → {handlerName}\n{body}");
+            else
+                list.Add($"{eventName} → {handlerName}\n(Method declared in XAML but no matching method found in code-behind)");
         }
 
         /// <summary>
-        /// Search project .cs files for method text by name. Uses simple text scanning + brace matching.
-        /// Returns the method signature + body or null if not found.
+        /// Tries to find the method body for a method named `methodName` by scanning .cs files in the project.
+        /// Returns null if not found. If found but empty, returns a helpful message about empty body.
         /// </summary>
         private string GetMethodBodyFromFile(string methodName)
         {
             try
             {
-                // locate project root by walking up until a .csproj exists
                 string dir = AppDomain.CurrentDomain.BaseDirectory;
                 DirectoryInfo di = new DirectoryInfo(dir);
                 while (di != null && !di.GetFiles("*.csproj").Any())
@@ -145,7 +186,6 @@ namespace PROG7312.Services
                 if (di == null) return null;
                 string projectRoot = di.FullName;
 
-                // get .cs files excluding bin/obj
                 var csFiles = Directory.GetFiles(projectRoot, "*.cs", SearchOption.AllDirectories)
                                        .Where(p => !p.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
                                                    !p.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar));
@@ -154,21 +194,17 @@ namespace PROG7312.Services
                 {
                     string code = File.ReadAllText(file);
 
-                    // quick prefilter
                     if (!code.Contains(methodName + "(", StringComparison.Ordinal)) continue;
 
-                    // find candidate occurrences
                     int idx = 0;
                     while ((idx = code.IndexOf(methodName + "(", idx, StringComparison.Ordinal)) >= 0)
                     {
-                        // Walk back to try to capture the signature start
                         int sigStart = idx;
                         int back = sigStart - 1;
                         while (back > 0 && code[back] != '\n' && code[back] != ';' && code[back] != '{' && code[back] != '}')
                             back--;
                         sigStart = Math.Max(0, back + 1);
 
-                        // find matching ')' for parameters
                         int parenStart = code.IndexOf('(', idx);
                         if (parenStart < 0) { idx += methodName.Length; continue; }
                         int pos = parenStart + 1;
@@ -181,11 +217,9 @@ namespace PROG7312.Services
                         }
                         if (parenDepth != 0) { idx += methodName.Length; continue; }
 
-                        // find first '{' after params
                         int braceOpen = code.IndexOf('{', pos);
                         if (braceOpen < 0) { idx += methodName.Length; continue; }
 
-                        // match braces to find method end
                         int bracePos = braceOpen + 1;
                         int depth = 1;
                         while (bracePos < code.Length && depth > 0)
@@ -200,13 +234,25 @@ namespace PROG7312.Services
                         int extractLength = bracePos - extractStart;
                         string methodText = code.Substring(extractStart, extractLength).Trim();
 
-                        // collapse multiple blank lines for readability
+                        // collapse multiple blank lines
                         methodText = Regex.Replace(methodText, @"\r\n\s*\r\n", "\r\n\r\n");
+
+                        // detect empty body (only whitespace/comments)
+                        int firstBrace = methodText.IndexOf('{');
+                        int lastBrace = methodText.LastIndexOf('}');
+                        if (firstBrace >= 0 && lastBrace > firstBrace)
+                        {
+                            string inner = methodText.Substring(firstBrace + 1, lastBrace - firstBrace - 1).Trim();
+                            string innerNoComments = Regex.Replace(inner, @"//.*?$|/\*.*?\*/", "", RegexOptions.Singleline | RegexOptions.Multiline).Trim();
+                            if (string.IsNullOrEmpty(innerNoComments))
+                            {
+                                return $"(Method {methodName} found but body appears empty — no behavior implemented)";
+                            }
+                        }
 
                         return methodText;
                     }
                 }
-
                 return null;
             }
             catch
@@ -228,13 +274,10 @@ namespace PROG7312.Services
                 {
                     new {
                         role = "system",
-                        content = "You are Oom Vrikkie, a stereotypical Afrikaner/boer uncle acting as a friendly guide in a municipal app. " +
-                        "Speak mostly in simple English, but sprinkle in a little Zulu, Afrikaans, and South African slang for flavour — not " +
-                        "too much, just enough to feel local. Explain app features at a high level in plain, everyday terms. Keep responses short," +
-                        " casual, and helpful, like you’re talking to a neighbour. Avoid overexplaining, avoid switching fully into another " +
-                        "language, and do not use formatting like bold text, quotation marks, or lists. Just give natural plain text responses." +
-                        "\r\n\r\nFor example, if the user clicks the Report button, you might say: Ja my bru, this button is for making a report" +
-                        " about things like potholes or water leaks. Nice and easy."
+                        content = "You are Oom Vrikkie, a stereotypical Afrikaner uncle acting as a friendly guide in a municipal app. " +
+                                  "Speak mostly in simple English, but sprinkle in a little Zulu, Afrikaans, and South African slang for flavour. " +
+                                  "Keep responses short, casual, and neighbourly. Avoid switching fully into another language or overexplaining." +
+                                  "The user does not need to know technical details, just what the systems intended purpose"
                     },
                     new { role = "user", content = prompt }
                 }

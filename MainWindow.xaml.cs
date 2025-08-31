@@ -13,6 +13,7 @@ namespace PROG7312
         private readonly GPTServices _gptServices = new GPTServices();
         private MascotAnimator _mascotAnimator;
         private bool awaitingComponentClick = false;
+        private ReportWindow reportWindow;
 
         public MainWindow()
         {
@@ -21,69 +22,75 @@ namespace PROG7312
             // initialize animator with the layer and speech controls
             string walkPath = @"C:\Users\lab_services_student\Desktop\PROG7312\vrikkie\walk.png";
             _mascotAnimator = new MascotAnimator(MascotCanvas, MascotLayer, MascotImage, walkPath, SpeechBorder, SpeechTextBox);
-            _mascotAnimator.ShowSpeech("Hello — click the mascot to ask me to explain a component.", 4);
+
+            // Greeting
+            _mascotAnimator.ShowSpeech("Hullo, I am Oom Vrikkie, feel free to ask me things by clicking on me!", 5);
             _mascotAnimator.Start();
         }
 
-        // clicking the mascot now starts "ask a component" flow (replaces btnMasc)
         private void MascotImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             awaitingComponentClick = true;
-            _mascotAnimator.ShowSpeech("Wat jou want explained?", 0); // show until we get the response
-        }
+            _mascotAnimator.PauseWalking();
 
-        private async void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!awaitingComponentClick) return;
-            awaitingComponentClick = false;
-
-            var clickedElement = GetClickedControl(e.OriginalSource);
-            if (clickedElement == null)
-            {
-                // immediate quick feedback
-                _mascotAnimator.ShowSpeech("I couldn't identify what you clicked.", 3);
-                return;
-            }
-
-            string elementName = string.IsNullOrEmpty(clickedElement.Name) ? "(unnamed)" : clickedElement.Name;
-            string elementType = clickedElement.GetType().Name;
-
-            // Show immediate prompt then ask GPT
-            _mascotAnimator.ShowSpeech("Thinking...", 0);
-            
-
-            var response = await _gptServices.ExplainClickedElementAsync(clickedElement);
-
-            if (string.IsNullOrWhiteSpace(response))
-                response = "(No response)";
-
-            // play thrust animation (use thrust sprite) and when frames done, pause and show response for 10s
             string thrustPath = @"C:\Users\lab_services_student\Desktop\PROG7312\vrikkie\thrust.png";
             var thrustSprite = new BitmapImage(new Uri(thrustPath));
 
             _mascotAnimator.PlayCustomAnimation(thrustSprite, row: 2, startFrame: 7, endFrame: 0, callback: () =>
             {
-                // after frames finished: pause walking and show response for 10s, then resume
-                _mascotAnimator.PauseWalking();
-                _mascotAnimator.ShowSpeech(response, 10, onHidden: () =>
-                {
-                    _mascotAnimator.ResumeWalking();
-                });
+
+                _mascotAnimator.ShowSpeech("Wat jou want explained?", 0); 
+               
             });
         }
 
-        private FrameworkElement GetClickedControl(object originalSource)
+        private async void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var current = originalSource as System.Windows.DependencyObject;
-            while (current != null && !(current is Control))
+            if (!awaitingComponentClick) return;    
+            var clickedElement = _gptServices.ResolveControl(e.OriginalSource); 
+            if (clickedElement == null)
             {
-                current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+                _mascotAnimator.ShowSpeech("I couldn’t identify what you clicked.", 3);
+                _mascotAnimator.ResumeWalking();
+                return;
             }
-            return current as FrameworkElement;
-        }
 
-        private void btnReport_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Report clicked!");
-        private void btnEvents_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Welcome! This is the Events button.");
-        private void btnRequest_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Request clicked!");
+            // pause + thinking bubble
+            _mascotAnimator.ShowSpeech("Thinking...", 0);
+
+            // GPT explain
+            var response = await _gptServices.ExplainClickedElementAsync(clickedElement);
+            awaitingComponentClick = false;
+            if (string.IsNullOrWhiteSpace(response))
+                response = "(No response)";
+
+            // show result then resume
+            _mascotAnimator.ShowSpeech(response, 10, onHidden: () =>
+            {
+                _mascotAnimator.ResumeWalking();
+            });
+        }
+        private void btnReport_Click(object sender, RoutedEventArgs e)
+        {
+            if (awaitingComponentClick)
+            {
+                return;
+            }
+            else {
+                reportWindow = new ReportWindow();
+                this.Hide();
+                reportWindow.ShowDialog();
+
+            }
+            
+        }
+        private void btnEvents_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Still in Development!"); 
+        }
+        private void btnRequest_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Still in Development!");
+        }
     }
 }
