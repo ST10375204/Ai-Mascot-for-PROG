@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Diagnostics;
+using System.Windows.Media.Media3D;
 
 namespace PROG7312.Services
 {
@@ -30,9 +31,6 @@ namespace PROG7312.Services
                 new AuthenticationHeaderValue("Bearer", Environment.GetEnvironmentVariable("OPENROUTER_API_KEY"));
         }
 
-        /// <summary>
-        /// Convenience: accept OriginalSource, resolve to a control, then explain it.
-        /// </summary>
         public async Task<string> ExplainClickedAsync(object originalSource)
         {
             var element = ResolveControl(originalSource);
@@ -41,21 +39,51 @@ namespace PROG7312.Services
 
             return await ExplainClickedElementAsync(element);
         }
-
-        /// <summary>
-        /// Public: resolve the visual-tree object to a FrameworkElement (Control) so callers don't need to duplicate logic.
-        /// </summary>
         public FrameworkElement ResolveControl(object source)
         {
+            if (source == null) return null;
+
             var current = source as DependencyObject;
-            while (current != null && !(current is Control))
-                current = VisualTreeHelper.GetParent(current);
-            return current as FrameworkElement;
+
+            while (current != null)
+            {
+                // Return only meaningful interactive controls
+                if (current is Button || current is TextBox || current is ComboBox || current is ListBox || current is RichTextBox)
+                    return current as FrameworkElement;
+
+                // Handle FlowDocument text content
+                if (current is System.Windows.Documents.TextElement textElement)
+                {
+                    current = textElement.Parent as DependencyObject;
+                    continue;
+                }
+
+                // Handle FlowDocument itself (not a Visual, so use LogicalTree)
+                if (current is System.Windows.Documents.FlowDocument doc)
+                {
+                    var parent = LogicalTreeHelper.GetParent(doc);
+                    if (parent is FrameworkElement feParent)
+                        return feParent;
+
+                    // if no FrameworkElement parent found, bail out
+                    return null;
+                }
+
+                // Safe guard: only call VisualTreeHelper if it's a Visual/Visual3D
+                if (current is Visual || current is Visual3D)
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                else
+                {
+                    // If it's neither a Visual nor FlowDocument/TextElement, stop climbing
+                    current = LogicalTreeHelper.GetParent(current);
+                }
+            }
+
+            return null;
         }
 
-        /// <summary>
-        /// Public: analyze the provided FrameworkElement (type/name/events), build prompt and call LLM.
-        /// </summary>
         public async Task<string> ExplainClickedElementAsync(FrameworkElement element)
         {
             if (element == null) return "(no element)";
@@ -103,17 +131,16 @@ namespace PROG7312.Services
                             $"Visual: {visualDetails}\n\n" +
                             $"XAML:\n{xamlSnippet}\n\n" +
                             $"Event Handlers with code:\n{eventsDetails}\n\n" +
-                            "Explain in simple terms what this component does and how it behaves.";
+                            "Explain in simple terms what this component does and how it behaves." +
+                            "";
 
-            // DEBUG: print the full prompt so you can inspect it in Output / terminal
+            // DEBUG
             Debug.WriteLine("----- GPT PROMPT BEGIN -----");
             Debug.WriteLine(prompt);
             Debug.WriteLine("----- GPT PROMPT END -----");
 
             return await GetResponseAsync(prompt);
         }
-
-        #region reflection + code scanning
 
         private List<string> GatherEventInfo(FrameworkElement element)
         {
@@ -170,10 +197,6 @@ namespace PROG7312.Services
                 list.Add($"{eventName} → {handlerName}\n(Method declared in XAML but no matching method found in code-behind)");
         }
 
-        /// <summary>
-        /// Tries to find the method body for a method named `methodName` by scanning .cs files in the project.
-        /// Returns null if not found. If found but empty, returns a helpful message about empty body.
-        /// </summary>
         private string GetMethodBodyFromFile(string methodName)
         {
             try
@@ -261,9 +284,6 @@ namespace PROG7312.Services
             }
         }
 
-        #endregion
-
-        #region LLM call
 
         private async Task<string> GetResponseAsync(string prompt)
         {
@@ -277,7 +297,8 @@ namespace PROG7312.Services
                         content = "You are Oom Vrikkie, a stereotypical Afrikaner uncle acting as a friendly guide in a municipal app. " +
                                   "Speak mostly in simple English, but sprinkle in a little Zulu, Afrikaans, and South African slang for flavour. " +
                                   "Keep responses short, casual, and neighbourly. Avoid switching fully into another language or overexplaining." +
-                                  "The user does not need to know technical details, just what the systems intended purpose"
+                                  "The user does not need to know technical details, just what the systems intended purpose" +
+                                  "Never give the user the names of the components or methods, only what they need to know to understand the function of the component"
                     },
                     new { role = "user", content = prompt }
                 }
@@ -309,8 +330,6 @@ namespace PROG7312.Services
             {
                 return $"Error: {ex.Message}";
             }
-        }
-
-        #endregion
+        } 
     }
 }

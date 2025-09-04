@@ -4,25 +4,34 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PROG7312"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
-        Title="Window1" Height="450" Width="800">
+        Title="Window1" Height="450" Width="800"
+        PreviewMouseLeftButtonDown="Window_MouseLeftButtonDown">
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-
+        <!-- Background -->
+        <Image Source="pack://application:,,,/Assets/bulleBoard.png"
+               Stretch="Fill"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch"/>
+        
         <!-- Location input -->
-        <TextBox HorizontalAlignment="Center" Margin="0,50,0,0" 
+        <TextBox HorizontalAlignment="Center" Margin="0,18,0,0" 
                  TextWrapping="Wrap" Text="Enter Location" VerticalAlignment="Top" 
-                 Width="164" Height="30" Grid.Column="1" Name="txtLocation"/>
+                 Width="263" Height="30" Grid.Column="1" Name="txtLocation"/>
 
         <!-- Category ListBox -->
-        <ListBox Grid.ColumnSpan="2" Margin="318,85,318,235" Name="lstCategory"
+        <ListBox Grid.ColumnSpan="2" Margin="268,53,368,267" Name="lstCategory"
                  DisplayMemberPath="Category"/>
 
         <!-- Description -->
-        <RichTextBox Grid.ColumnSpan="2" Margin="318,204,318,76" Name="rchDesc">
+        <RichTextBox Grid.ColumnSpan="2" Margin="268,172,268,108" Name="rchDesc">
             <FlowDocument>
                 <Paragraph>
                     <Run Text="Enter description here"/>
@@ -30,14 +39,148 @@
             </FlowDocument>
         </RichTextBox>
 
-        <!-- Image selector -->
-        <Image HorizontalAlignment="Left" Height="50" Margin="268,252,0,0" 
-               VerticalAlignment="Top" Width="50" Grid.Column="1" x:Name="imgFile"
-               MouseDown="imgFile_MouseDown" Cursor="Hand"/>
+        <!-- Submit Report Button -->
+        <Button x:Name="btnSubmit"
+        Width="244"
+        Height="50"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Margin="0,349,0,0"
+        Click="btnSubmit_Click"
+        Grid.Column="1">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Image x:Name="btnSubmitImage" Stretch="Uniform" IsHitTestVisible="False"/>
+                <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,-15,0,0"
+                   Foreground="Black"
+                   FontWeight="Bold"
+                   TextAlignment="Center"
+                   IsHitTestVisible="False">
+            Report<LineBreak/>Problems
+                </TextBlock>
+            </Grid>
+        </Button>
 
-        <!-- Submit image -->
-        <Image HorizontalAlignment="Left" Height="51" Margin="298,375,0,0" 
-               VerticalAlignment="Top" Width="217" Grid.Column="1" Name="imgSubmit"
-               MouseDown="imgSubmit_MouseDown" Cursor="Hand"/>
+
+        <!-- File Picker Button -->
+        <Button x:Name="btnFilePicker"
+        Width="82"
+        Height="56"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="450,54,0,0"
+        Click="btnFilePicker_Click"
+        Grid.ColumnSpan="2">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="11*"/>
+                    <ColumnDefinition Width="0*"/>
+                </Grid.ColumnDefinitions>
+                <Image x:Name="btnFilePickerImage" Stretch="Uniform" Grid.ColumnSpan="2" IsHitTestVisible="False"/>
+                <TextBlock Text="Select File"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,-15,0,0"
+                   Foreground="Black"
+                   FontWeight="Bold"
+                   Grid.ColumnSpan="2"
+                   IsHitTestVisible="False"/>
+            </Grid>
+        </Button>
+
+
+        <!-- Back Button -->
+        <Button x:Name="btnBack"
+        Width="82"
+        Height="56"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="21,18,0,0"
+        Click="btnBack_Click"
+        Grid.ColumnSpan="2">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="11*"/>
+                    <ColumnDefinition Width="0*"/>
+                </Grid.ColumnDefinitions>
+                <Image x:Name="btnBackImage" Stretch="Uniform" Grid.ColumnSpan="2" IsHitTestVisible="False"/>
+                <TextBlock Text="Back"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,-15,0,0"
+                   Foreground="Black"
+                   FontWeight="Bold"
+                   Grid.ColumnSpan="2"
+                   IsHitTestVisible="False"/>
+            </Grid>
+        </Button>
+
+        <!-- Mascot Layer -->
+        <Canvas x:Name="MascotCanvas" Background="Transparent" Margin="10,10,0,0">
+            <Canvas x:Name="MascotLayer" Canvas.Left="26" Canvas.Top="324">
+                <Image x:Name="MascotImage"
+                Width="135" Height="102"
+                MouseLeftButtonDown="MascotImage_MouseLeftButtonDown"
+                HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <Border x:Name="SpeechBorder"
+                 Background="White"
+                 BorderBrush="Black"
+                 BorderThickness="1"
+                 CornerRadius="8"
+                 Padding="6"
+                 Visibility="Collapsed"
+                 Canvas.Left="90" Canvas.Top="-10"
+                 MaxWidth="320"
+                 MinWidth="80"
+                  Panel.ZIndex="100">
+                    <TextBox x:Name="SpeechTextBox"
+                      TextWrapping="Wrap"
+                      AcceptsReturn="True"
+                      IsReadOnly="True"
+                      BorderThickness="0"
+                      Background="Transparent"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MaxHeight="160"
+                      Panel.ZIndex="100"/>
+                </Border>
+            </Canvas>
+        </Canvas>
     </Grid>
 </Window>

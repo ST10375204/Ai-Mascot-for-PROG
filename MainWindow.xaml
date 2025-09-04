@@ -2,68 +2,160 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Mascot AI" Height="450" Width="800"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
         PreviewMouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Grid>
+        <!-- Background -->
+        <Image Source="pack://application:,,,/Assets/bulleBoard.png"
+               Stretch="Fill"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch"/>
+        <!-- Bulletin Notes Layer -->
+        <Canvas x:Name="NotesCanvas"
+        Panel.ZIndex="40"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"/>
 
-        <Canvas x:Name="MascotCanvas" Background="Transparent">
 
+        <!-- Mascot Layer -->
+        <Canvas x:Name="MascotCanvas" Background="Transparent" Margin="10,10,0,0">
             <Canvas x:Name="MascotLayer" Canvas.Left="26" Canvas.Top="324">
-
-                <!-- Mascot image -->
+                <!-- Mascot image stays clickable -->
                 <Image x:Name="MascotImage"
-                       Width="135" Height="102"
-                       MouseLeftButtonDown="MascotImage_MouseLeftButtonDown"
-                       HorizontalAlignment="Left" VerticalAlignment="Top"/>
+               Width="135" Height="102"
+               MouseLeftButtonDown="MascotImage_MouseLeftButtonDown"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               IsHitTestVisible="True"/>
 
+                <!-- Speech bubble ignores mouse events -->
                 <Border x:Name="SpeechBorder"
-                        Background="White"
-                        BorderBrush="Black"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="6"
-                        Visibility="Collapsed"
-                        Canvas.Left="90" Canvas.Top="-10"
-                        MaxWidth="320"
-                        MinWidth="80"
-                        >
+                Background="White"
+                BorderBrush="Black"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="6"
+                Visibility="Collapsed"
+                Canvas.Left="90"
+                Canvas.Top="-10"
+                MaxWidth="320"
+                MinWidth="80"
+                IsHitTestVisible="False"
+                Panel.ZIndex="100">
                     <TextBox x:Name="SpeechTextBox"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             IsReadOnly="True"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             VerticalScrollBarVisibility="Auto"
-                             HorizontalScrollBarVisibility="Disabled"
-                             MaxHeight="160"/>
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled"
+                     MaxHeight="160"
+                     IsHitTestVisible="False"
+                     Panel.ZIndex="100"/>
                 </Border>
             </Canvas>
         </Canvas>
 
-        <!-- Hidden 'source of truth' textbox removed; SpeechTextBox is authoritative now do not remove deevee m8 -->
+        <!-- Buttons -->
+        <!-- Report Problems -->
         <Button x:Name="btnReport"
-                Content="Report Problems"
-                Width="128"
-                Height="34"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Margin="0,364,0,0"
-                Click="btnReport_Click" RenderTransformOrigin="2.783,1.773"/>
+        Width="180"
+        Height="60"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Margin="0,359,0,0"
+        Click="btnReport_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="Transparent" >
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Image x:Name="btnReportImage" Stretch="Uniform" IsHitTestVisible="False"/>
+                <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,-15,0,0"
+                   Foreground="Black"
+                   FontWeight="Bold"
+                   TextAlignment="Center"
+                   IsHitTestVisible="False">
+            Report<LineBreak/>Problems
+                </TextBlock>
+            </Grid>
+        </Button>
+
+
+        <!-- See Events -->
         <Button x:Name="btnEvents"
-                Content="See Events"
-                Width="128"
-                Height="34"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Margin="600,364,0,0"
-                Click="btnEvents_Click"/>
+        Width="180"
+        Height="60"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="592,359,0,0"
+        Click="btnEvents_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Image x:Name="btnEventsImage" Stretch="Uniform" IsHitTestVisible="False"/>
+                <TextBlock Text="See Events"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,-15,0,0"
+                   Foreground="Black"
+                   FontWeight="Bold"
+                   IsHitTestVisible="False"/>
+            </Grid>
+        </Button>
+
+
+        <!-- Request -->
         <Button x:Name="btnRequest"
-                Content="Make Service Request"
-                Width="128"
-                Height="34"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Margin="49,364,0,0"
-                Click="btnRequest_Click"/>
+        Width="180"
+        Height="60"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        FocusVisualStyle="{x:Null}"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="28,359,0,0"
+        Click="btnRequest_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Image x:Name="btnRequestImage" Stretch="Uniform" IsHitTestVisible="False"/>
+                <TextBlock Text="Request"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,-15,0,0"
+                   Foreground="Black"
+                   FontWeight="Bold"
+                   IsHitTestVisible="False"/>
+            </Grid>
+        </Button>
+
     </Grid>
 </Window>

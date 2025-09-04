@@ -39,7 +39,7 @@ namespace PROG7312.Services
         private const int RowLeft = 1;
         private const int RowDown = 2;
         private const int RowRight = 3;
-        private const int RowThrust = 4; // assume thrust animation on row 4
+        private const int RowThrust = 4;
 
         private int _directionRow = RowRight;
         private double _speed = 2.5;
@@ -297,5 +297,7 @@ namespace PROG7312.Services
             _activeSheet = _defaultSheet;
             if (_frameIndex >= FramesPerRow) _frameIndex = 0;
         }
+
+
     }
 }
