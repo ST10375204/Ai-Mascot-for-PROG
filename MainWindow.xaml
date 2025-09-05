@@ -20,9 +20,15 @@
 
 
         <!-- Mascot Layer -->
-        <Canvas x:Name="MascotCanvas" Background="Transparent" Margin="10,10,0,0">
+        <Canvas x:Name="MascotCanvas" 
+        Background="{x:Null}" 
+        Margin="10,10,0,0"
+        Panel.ZIndex="999">
+            <!-- Ensure mascot always on top -->
+
             <Canvas x:Name="MascotLayer" Canvas.Left="26" Canvas.Top="324">
-                <!-- Mascot image stays clickable -->
+
+                <!-- Mascot image (stays clickable) -->
                 <Image x:Name="MascotImage"
                Width="135" Height="102"
                MouseLeftButtonDown="MascotImage_MouseLeftButtonDown"
@@ -30,7 +36,7 @@
                VerticalAlignment="Top"
                IsHitTestVisible="True"/>
 
-                <!-- Speech bubble ignores mouse events -->
+                <!-- Speech bubble (ignore mouse clicks) -->
                 <Border x:Name="SpeechBorder"
                 Background="White"
                 BorderBrush="Black"
@@ -43,7 +49,7 @@
                 MaxWidth="320"
                 MinWidth="80"
                 IsHitTestVisible="False"
-                Panel.ZIndex="100">
+                    Panel.ZIndex="100">
                     <TextBox x:Name="SpeechTextBox"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"
@@ -53,11 +59,11 @@
                      VerticalScrollBarVisibility="Auto"
                      HorizontalScrollBarVisibility="Disabled"
                      MaxHeight="160"
-                     IsHitTestVisible="False"
-                     Panel.ZIndex="100"/>
+                     IsHitTestVisible="False"/>
                 </Border>
             </Canvas>
         </Canvas>
+
 
         <!-- Buttons -->
         <!-- Report Problems -->

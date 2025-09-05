@@ -131,7 +131,7 @@ namespace PROG7312.Services
                             $"Visual: {visualDetails}\n\n" +
                             $"XAML:\n{xamlSnippet}\n\n" +
                             $"Event Handlers with code:\n{eventsDetails}\n\n" +
-                            "Explain in simple terms what this component does and how it behaves." +
+                            "Explain in simple terms what this component is intended to do " +
                             "";
 
             // DEBUG

@@ -26,7 +26,6 @@ namespace PROG7312.Services
 
         public void AddReportToBoard(ReportItem report)
         {
-            // Root container for one note
             var noteRoot = new Grid
             {
                 Width = NoteWidth,
@@ -42,7 +41,7 @@ namespace PROG7312.Services
             };
             noteRoot.Children.Add(noteBg);
 
-            // Content area
+            // Content host
             var contentHost = new Grid
             {
                 Margin = new Thickness(
@@ -57,16 +56,39 @@ namespace PROG7312.Services
             var viewbox = new Viewbox { Stretch = Stretch.Fill };
             contentHost.Children.Add(viewbox);
 
+            // Vertical stack for text
             var content = new StackPanel { Orientation = Orientation.Vertical };
+
+            // --- Top row: category + optional attachment ---
+            var header = new DockPanel();
 
             var cat = new TextBlock
             {
                 Text = report.Category,
                 FontWeight = FontWeights.Bold,
                 FontSize = 10,
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center
             };
+            DockPanel.SetDock(cat, Dock.Left);
+            header.Children.Add(cat);
 
+            // If a file is attached, show its icon
+            if (!string.IsNullOrWhiteSpace(report.ImagePath) && System.IO.File.Exists(report.ImagePath))
+            {
+                var attachmentIcon = new Image
+                {
+                    Source = new BitmapImage(new Uri(report.ImagePath, UriKind.Absolute)),
+                    Width = 40,
+                    Height = 40,
+                    Margin = new Thickness(4, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                DockPanel.SetDock(attachmentIcon, Dock.Right);
+                header.Children.Add(attachmentIcon);
+            }
+
+            // Location + description
             var loc = new TextBlock
             {
                 Text = report.Location,
@@ -85,18 +107,17 @@ namespace PROG7312.Services
                 MaxHeight = 40
             };
 
-            content.Children.Add(cat);
+            // Add to stack
+            content.Children.Add(header);
             content.Children.Add(loc);
             content.Children.Add(desc);
-            viewbox.Child = content;
 
+            viewbox.Child = content;
             noteRoot.Children.Add(contentHost);
 
-            // Add a slight tilt
+            // Tilt and placement
             noteRoot.RenderTransformOrigin = new Point(0.5, 0.1);
             noteRoot.RenderTransform = new RotateTransform(_rng.Next(-5, 6));
-
-            // Position with overlap-check
             PlaceNoteRandomly(noteRoot);
 
             _boardCanvas.Children.Add(noteRoot);
