@@ -12,6 +12,7 @@
     <None Remove="Assets\bulleBoard.png" />
     <None Remove="Assets\button.png" />
     <None Remove="Assets\note.png" />
+    <None Remove="vrikkie\tannie.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +31,9 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\note.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\tannie.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

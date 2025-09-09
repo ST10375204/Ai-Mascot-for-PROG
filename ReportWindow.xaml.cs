@@ -35,7 +35,6 @@ namespace PROG7312
             _mascotAnimator.Start();
             reports = new ReportQueue();
 
-            // Populate sample categories
             lstCategory.Items.Add(new ReportItem("", "Pothole", "", ""));
             lstCategory.Items.Add(new ReportItem("", "Graffiti", "", ""));
             lstCategory.Items.Add(new ReportItem("", "Streetlight", "", ""));

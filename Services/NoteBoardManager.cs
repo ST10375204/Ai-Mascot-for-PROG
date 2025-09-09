@@ -59,7 +59,7 @@ namespace PROG7312.Services
             // Vertical stack for text
             var content = new StackPanel { Orientation = Orientation.Vertical };
 
-            // --- Top row: category + optional attachment ---
+            //Top row: category + attachment
             var header = new DockPanel();
 
             var cat = new TextBlock
@@ -156,8 +156,8 @@ namespace PROG7312.Services
                 Rect intersect = Rect.Intersect(existing, candidate);
                 double overlapArea = intersect.Width * intersect.Height;
                 double candidateArea = candidate.Width * candidate.Height;
-
-                if (overlapArea > candidateArea * 0.3) // allow ≤30% overlap
+                
+                if (overlapArea > candidateArea * 0.3) // allow around 30% overlap
                     return true;
             }
             return false;

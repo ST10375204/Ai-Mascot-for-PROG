@@ -58,7 +58,7 @@ namespace PROG7312.Services
                     continue;
                 }
 
-                // Handle FlowDocument itself (not a Visual, so use LogicalTree)
+                // Handle FlowDocument itself 
                 if (current is System.Windows.Documents.FlowDocument doc)
                 {
                     var parent = LogicalTreeHelper.GetParent(doc);

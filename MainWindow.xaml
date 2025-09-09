@@ -24,11 +24,11 @@
         Background="{x:Null}" 
         Margin="10,10,0,0"
         Panel.ZIndex="999">
-            <!-- Ensure mascot always on top -->
+            <!--  mascot always on top -->
 
             <Canvas x:Name="MascotLayer" Canvas.Left="26" Canvas.Top="324">
 
-                <!-- Mascot image (stays clickable) -->
+                <!-- Mascot image -->
                 <Image x:Name="MascotImage"
                Width="135" Height="102"
                MouseLeftButtonDown="MascotImage_MouseLeftButtonDown"
