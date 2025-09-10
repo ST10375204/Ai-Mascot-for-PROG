@@ -49,14 +49,23 @@ PROG7312.sln
 ## Project Structure  
 Ai-Mascot-for-PROG/
 │── App.xaml / App.xaml.cs # Application entry point
+
 │── MainWindow.xaml / .cs # Primary interface with mascot
+
 │── ReportWindow.xaml / .cs # Secondary window for reporting
+
 │── DataStructures/ # Custom data models (e.g. ReportItem)
+
 │── Services/ # Service logic and AI interaction
+
 │── Assets/ # Images and visual resources
+
 │── vrikkie/ # Mascot assets
+
 │── PROG7312.sln # Visual Studio solution file
+
 │── PROG7312.csproj # Project configuration file
+
 
 ## Usage Guidelines  
 1. Launch the application.  
