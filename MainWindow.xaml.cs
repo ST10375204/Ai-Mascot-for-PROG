@@ -27,14 +27,14 @@ namespace PROG7312
             InitializeComponent();
 
             // Setup mascot
-            string walkPath = @"C:\Users\lab_services_student\Desktop\PROG7312\vrikkie\walk.png";
+            string walkPath = "pack://application:,,,/PROG7312;component/Assets/walk.png";
             _mascotAnimator = new MascotAnimator(MascotCanvas, MascotLayer, MascotImage, walkPath, SpeechBorder, SpeechTextBox);
 
             _mascotAnimator.ShowSpeech("Hullo, I am Oom Vrikkie, feel free to ask me things by clicking on me!", 5);
             _mascotAnimator.Start();
 
             // Button sprite sheet path
-            string spritePath = @"C:\Users\lab_services_student\Desktop\PROG7312\Assets\button.png";
+            string spritePath = "pack://application:,,,/PROG7312;component/Assets/button.png";
 
             // Frame definitions
             var defaultFrame = new Int32Rect(50, 158, 190, 112);
@@ -54,7 +54,7 @@ namespace PROG7312
             awaitingComponentClick = true;
             _mascotAnimator.PauseWalking();
 
-            string thrustPath = @"C:\Users\lab_services_student\Desktop\PROG7312\vrikkie\thrust.png";
+            string thrustPath = "pack://application:,,,/PROG7312;component/Assets/thrust.png";
             var thrustSprite = new BitmapImage(new Uri(thrustPath));
 
             _mascotAnimator.PlayCustomAnimation(thrustSprite, row: 2, startFrame: 7, endFrame: 0, callback: () =>

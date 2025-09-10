@@ -13,6 +13,8 @@
     <None Remove="Assets\bulleBoard.png" />
     <None Remove="Assets\button.png" />
     <None Remove="Assets\note.png" />
+    <None Remove="Assets\thrust.png" />
+    <None Remove="Assets\walk.png" />
     <None Remove="vrikkie\tannie.png" />
   </ItemGroup>
 
@@ -40,6 +42,16 @@
     <Resource Include="Assets\tannie.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Assets\thrust.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\walk.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="vrikkie\" />
   </ItemGroup>
 
 </Project>
