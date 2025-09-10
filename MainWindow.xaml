@@ -162,6 +162,8 @@
                    IsHitTestVisible="False"/>
             </Grid>
         </Button>
+        <Image Source="/Assets/banner.png" Stretch="Fill" IsHitTestVisible="False" Margin="168,0,158,318"/>
+        <Label IsHitTestVisible="False" Content="Municipal Report Board" HorizontalAlignment="Left" Margin="277,10,0,0" VerticalAlignment="Top" Width="290" FontSize="22" FontStyle="Oblique" FontWeight="Bold"/>
 
     </Grid>
 </Window>

@@ -24,16 +24,16 @@
         <!-- Bulletin Notes Layer -->
 
         <!-- Location input -->
-        <TextBox HorizontalAlignment="Center" Margin="0,21,0,0" 
+        <TextBox HorizontalAlignment="Center" Margin="0,31,0,0" 
                  TextWrapping="Wrap" Text="Enter Location" VerticalAlignment="Top" 
                  Width="264" Height="30" Grid.Column="1" Name="txtLocation"/>
 
         <!-- Category ListBox -->
-        <ListBox Grid.ColumnSpan="2" Margin="268,56,368,264" Name="lstCategory"
+        <ListBox Grid.ColumnSpan="2" Margin="268,74,368,246" Name="lstCategory"
                  DisplayMemberPath="Category"/>
 
         <!-- Description -->
-        <RichTextBox Grid.ColumnSpan="2" Margin="268,175,268,105" Name="rchDesc">
+        <RichTextBox Grid.ColumnSpan="2" Margin="268,193,268,87" Name="rchDesc">
             <FlowDocument>
                 <Paragraph>
                     <Run Text="Enter description here"/>
@@ -85,7 +85,7 @@
         FocusVisualStyle="{x:Null}"
         HorizontalAlignment="Left"
         VerticalAlignment="Top"
-        Margin="450,57,0,0"
+        Margin="450,75,0,0"
         Click="btnFilePicker_Click"
         Grid.ColumnSpan="2">
             <Button.Template>
