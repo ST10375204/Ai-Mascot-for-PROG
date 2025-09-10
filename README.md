@@ -48,6 +48,7 @@ PROG7312.sln
 
 ## Project Structure  
 Ai-Mascot-for-PROG/
+
 │── App.xaml / App.xaml.cs # Application entry point
 
 │── MainWindow.xaml / .cs # Primary interface with mascot
