@@ -26,7 +26,7 @@ The application combines interactive user engagement with practical reporting fu
 ## Installation and Execution  
 
 ### Clone or Download the Repository  
-```bash
+
 git clone https://github.com/ST10375204/Ai-Mascot-for-PROG/
 Alternatively, extract the provided ZIP archive.
 
